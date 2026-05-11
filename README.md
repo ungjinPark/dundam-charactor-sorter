@@ -1,79 +1,74 @@
-# Dundam Sort Bar
+# Dundam Sort Bar 임시 설치 가이드
 
-Dundam search result pages에 정렬 컨트롤을 추가하는 Chrome/Edge용 Manifest V3 확장프로그램입니다.
+Dundam 검색 결과 페이지에 정렬 바를 추가하는 Chrome/Edge 확장프로그램입니다.
 
-확장프로그램 아이콘을 누르면 popup 창에서 정렬 기능을 켜고 끌 수 있습니다.
-설정은 `chrome.storage.local`에 저장되며 기본값은 켜짐입니다.
+현재는 스토어 배포 전 단계이므로, 압축 파일을 내려받아 브라우저의 개발자 모드에서 직접 설치하는 방식으로 사용합니다.
 
-## 설치해서 테스트하기
+## 설치 파일
 
-### Chrome
+배포용 zip 파일은 우측 Releases 받으실 수 있습니다.
 
-1. `chrome://extensions`로 이동합니다.
+```text
+dundam-sort-bar-v0.1.0.zip
+```
+
+zip 파일을 원하는 위치에 압축 해제합니다.
+브라우저에는 zip 파일 자체가 아니라, 압축을 푼 폴더를 로드해야 합니다.
+
+## Chrome에 설치하기
+
+1. Chrome 주소창에 아래 주소를 입력합니다.
+
+   ```text
+   chrome://extensions
+   ```
+
 2. 오른쪽 위의 개발자 모드를 켭니다.
-3. 압축해제된 확장 프로그램 로드를 선택합니다.
-4. 이 프로젝트 폴더를 선택합니다.
-5. `https://dundam.xyz/search`로 시작하는 페이지에서 정렬 바가 보이는지 확인합니다.
+3. 압축해제된 확장 프로그램 로드를 누릅니다.
+4. `dundam-sort-bar-v0.1.0` 압축을 푼 폴더를 선택합니다.
+5. 확장프로그램 목록에 `Dundam Sort Bar`가 보이면 설치 완료입니다.
 
-### Edge
+## Edge에 설치하기
 
-1. `edge://extensions`로 이동합니다.
+1. Edge 주소창에 아래 주소를 입력합니다.
+
+   ```text
+   edge://extensions
+   ```
+
 2. 왼쪽의 개발자 모드를 켭니다.
-3. 압축해제된 항목 로드를 선택합니다.
-4. 이 프로젝트 폴더를 선택합니다.
-5. `https://dundam.xyz/search`로 시작하는 페이지에서 정렬 바가 보이는지 확인합니다.
+3. 압축해제된 항목 로드를 누릅니다.
+4. `dundam-sort-bar-v0.1.0` 압축을 푼 폴더를 선택합니다.
+5. 확장프로그램 목록에 `Dundam Sort Bar`가 보이면 설치 완료입니다.
 
-## 배포용 zip 만들기
+## 사용 방법
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/package.ps1
-```
+1. `https://dundam.xyz/search`로 시작하는 검색 결과 페이지를 엽니다.
+2. 캐릭터 목록이 로드되면 정렬 바가 자동으로 추가됩니다.
+3. 브라우저 툴바의 `Dundam Sort Bar` 아이콘을 누르면 기능을 켜고 끌 수 있습니다.
 
-생성 결과:
+기능을 끄면 이미 삽입된 정렬 바도 제거됩니다.
+다시 켜면 검색 결과 DOM이 준비된 뒤 정렬 바가 다시 삽입됩니다.
+
+## 업데이트 방법
+
+새 버전을 받으면 기존 폴더를 새 폴더로 교체한 뒤 확장프로그램 페이지에서 새로고침 버튼을 누릅니다.
+
+Chrome:
 
 ```text
-dist/dundam-sort-bar-v0.1.0.zip
+chrome://extensions
 ```
 
-zip에는 `manifest.json`, `src/content.js`, `popup/*`, `icons/*`, `README.md`가 포함됩니다.
-
-## 구조
+Edge:
 
 ```text
-manifest.json
-src/
-  content.js
-popup/
-  popup.html
-  popup.css
-  popup.js
-icons/
-  dundam-16.png
-  dundam-32.png
-  dundam-64.png
-  dundam-128.png
-scripts/
-  package.ps1
-dist/
+edge://extensions
 ```
 
-`src/content.js`는 `https://dundam.xyz/search*` 페이지에서만 content script로 실행됩니다.
-content script가 로드되면 최대 15초 동안 100ms마다 검색 결과 DOM을 확인하고, 캐릭터 목록이 발견되면 정렬 DOM을 삽입합니다.
-popup 스위치가 꺼져 있으면 정렬 DOM을 삽입하지 않습니다.
-스위치를 끄면 이미 삽입된 정렬 DOM도 제거합니다.
+## 문제가 있을 때
 
-직접 다시 삽입을 시도하려면 아래 함수를 호출하면 됩니다.
-
-```js
-window.dundamSortBar.mount();
-```
-
-사용 가능한 API:
-
-```js
-window.dundamSortBar.canMount(); // .search와 검색 결과 DOM이 준비됐는지 확인
-window.dundamSortBar.mount(); // 스타일과 정렬 컨트롤 삽입
-window.dundamSortBar.mountWhenReady(); // 최대 15초 동안 기다린 뒤 삽입
-window.dundamSortBar.waitForCharacterList(); // 캐릭터 목록 등장 여부 Promise 반환
-window.dundamSortBar.sort("attacker", "dsc"); // 현재 결과를 직접 정렬
-```
+- 정렬 바가 보이지 않으면 검색 결과가 완전히 로드된 뒤 새로고침합니다.
+- 확장프로그램 아이콘을 눌러 스위치가 켜져 있는지 확인합니다.
+- 확장프로그램 페이지에서 오류가 표시되면 확장프로그램을 다시 로드합니다.
+- Dundam 사이트의 DOM 구조가 바뀐 경우 정렬 기능이 동작하지 않을 수 있습니다.
