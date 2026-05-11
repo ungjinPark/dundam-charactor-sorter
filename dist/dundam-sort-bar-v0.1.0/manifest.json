@@ -25,7 +25,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://dundam.xyz/search*"
+        "https://dundam.xyz/*"
       ],
       "js": [
         "src/content.js"

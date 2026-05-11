@@ -8,8 +8,11 @@
   const CHARACTER_SELECTOR = ".sr-result > .scon";
   const WAIT_TICK_MS = 100;
   const MAX_WAIT_TICKS = 150;
+  const ROUTE_TICK_MS = 250;
   const STORAGE_KEY = "dundamSortBarEnabled";
   const DEFAULT_ENABLED = true;
+  let currentMountRun = 0;
+  let lastHref = location.href;
 
   const KOREAN_UNITS = [
     { label: "경", value: 10_000 ** 4 },
@@ -227,10 +230,15 @@
 
   function canInitialize() {
     return Boolean(
-      document.head
+      isSearchPage()
+      && document.head
       && document.querySelector(SEARCH_SELECTOR)
       && document.querySelector(CHARACTER_SELECTOR)
     );
+  }
+
+  function isSearchPage() {
+    return location.origin === "https://dundam.xyz" && location.pathname.startsWith("/search");
   }
 
   function mount() {
@@ -265,6 +273,12 @@
       let ticks = 0;
 
       const timer = window.setInterval(() => {
+        if (!isSearchPage()) {
+          window.clearInterval(timer);
+          resolve(false);
+          return;
+        }
+
         if (document.querySelectorAll(CHARACTER_SELECTOR).length > 0) {
           window.clearInterval(timer);
           resolve(true);
@@ -282,9 +296,19 @@
   }
 
   async function mountWhenReady() {
+    const mountRun = ++currentMountRun;
+
+    if (!isSearchPage()) {
+      unmount();
+      return false;
+    }
+
     if (!(await getEnabled())) return false;
+    if (mountRun !== currentMountRun) return false;
 
     const ready = await waitForCharacterList();
+
+    if (mountRun !== currentMountRun) return false;
 
     if (!ready) {
       console.warn("[Dundam Sort Bar] Search results were not found within 15s.");
@@ -292,6 +316,7 @@
     }
 
     if (!(await getEnabled())) return false;
+    if (mountRun !== currentMountRun || !isSearchPage()) return false;
 
     return mount();
   }
@@ -311,6 +336,22 @@
     });
   }
 
+  function watchRouteChanges() {
+    window.setInterval(() => {
+      if (location.href === lastHref) return;
+
+      lastHref = location.href;
+      currentMountRun += 1;
+
+      if (!isSearchPage()) {
+        unmount();
+        return;
+      }
+
+      mountWhenReady();
+    }, ROUTE_TICK_MS);
+  }
+
   window.dundamSortBar = {
     mount,
     unmount,
@@ -321,5 +362,6 @@
   };
 
   watchEnabledChanges();
+  watchRouteChanges();
   mountWhenReady();
 })();
